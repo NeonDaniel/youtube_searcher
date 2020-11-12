@@ -32,11 +32,6 @@ def search_youtube(query, location_code="US",
                        headers=headers, params=params).text
 
     soup = bs4.BeautifulSoup(html, 'html.parser')
-    blob = str(soup.find('script', string=re.compile('ytInitialData')))
-    s = """window["ytInitialData"] = """
-    e = """;
-    window["ytInitialPlayerResponse"] = null;"""
-    json_text = blob.split(s)[1].split(e)[0]
 
     results = _get_json(soup)
 
