@@ -4,6 +4,17 @@ import json
 from youtube_searcher.session import session
 
 
+def _get_json(soup_blob):
+    # Make sure we always get the correct blob and santize it
+    blob = soup_blob.find('script', text=re.compile("ytInitialData"))
+    json_data = str(blob)[
+                str(blob).find('{\"responseContext\"'):str(blob).find(
+                    'module={}')]
+    json_data = re.split(r"\};", json_data)[0]
+    results = json.loads(json_data + "}")
+    return results
+
+
 def search_youtube(query, location_code="US",
                    user_agent='Mozilla/5.0 (X11; Linux x86_64) '
                               'AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -27,7 +38,7 @@ def search_youtube(query, location_code="US",
     window["ytInitialPlayerResponse"] = null;"""
     json_text = blob.split(s)[1].split(e)[0]
 
-    results = json.loads(json_text)
+    results = _get_json(soup)
 
     data = {"query": query, "corrected_query": query}
 
@@ -263,10 +274,12 @@ def search_youtube(query, location_code="US",
             elif 'channelRenderer' in vid:
                 continue  # handled in first pass
             else:
+                print("If you see this output please open an issue with "
+                      "DEBUG CODE: 1, and paste snippet bellow")
+                print("/// START DEBUG INFO")
+                print(query)
+                print("/// END DEBUG INFO")
                 continue
-                # Debug, never reached this point
-                print(1)
-                print(vid)
 
     if contents.get("secondaryContents"):
         secondary = \
@@ -330,10 +343,14 @@ def search_youtube(query, location_code="US",
                             "playlistId": playlistId
                         })
                 else:
-                    continue
                     # Debug, never reached this point
-                    print(2 )
+                    print("If you see this output please open an issue with "
+                          "DEBUG CODE: 2, and paste snippet bellow")
+                    print("/// START DEBUG INFO")
+                    print(query)
                     print(entry)
+                    print("/// END DEBUG INFO")
+                    continue
 
     data["videos"] = videos
     data["playlists"] = playlists
